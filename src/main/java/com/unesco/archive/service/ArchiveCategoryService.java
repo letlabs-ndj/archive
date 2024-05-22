@@ -12,8 +12,9 @@ import java.util.List;
 
 @Service
 public class ArchiveCategoryService {
-    private final ArchiveCategoryRepo archiveCategoryRepo;
     @Autowired
+    private final ArchiveCategoryRepo archiveCategoryRepo;
+
     public ArchiveCategoryService(ArchiveCategoryRepo archiveCategoryRepo){
         this.archiveCategoryRepo = archiveCategoryRepo;
     }

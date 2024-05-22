@@ -4,7 +4,6 @@ import com.unesco.archive.exceptions.StorageFileNotFoundException;
 import com.unesco.archive.model.Archive;
 import com.unesco.archive.model.ArchiveCategory;
 import com.unesco.archive.model.ArchiveCategoryList;
-import com.unesco.archive.model.enums.FileType;
 import com.unesco.archive.service.ArchiveCategoryService;
 import com.unesco.archive.service.ArchiveService;
 import com.unesco.archive.service.StorageService;
@@ -13,24 +12,27 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 
-@RestController
-@RequestMapping("/archive")
+@Controller
 public class ArchiveUploadController {
 
+	@Autowired
 	private final StorageService storageService;
-	private ArchiveService archiveService;
-	private ArchiveCategoryService archiveCategoryService;
 
 	@Autowired
+	private ArchiveService archiveService;
+
+	@Autowired
+	private ArchiveCategoryService archiveCategoryService;
+
 	public ArchiveUploadController(StorageService storageService,
 								   ArchiveService archiveService,
 								   ArchiveCategoryService archiveCategoryService) {
@@ -39,12 +41,23 @@ public class ArchiveUploadController {
 		this.archiveCategoryService = archiveCategoryService;
 	}
 
-	@GetMapping("/all")
+	@GetMapping("/")
+    public String getAllArchiveCategories(Model model) {
+        model.addAttribute("categories", archiveCategoryService.getAllArchivesCategories());
+        return "index";
+    }
+
+    @PostMapping("/categories/add")
+    public ResponseEntity<ArchiveCategory> saveArchiveCategory(@RequestBody ArchiveCategory archiveCategory) {
+        return new ResponseEntity<>(archiveCategoryService.saveArchiveCategory(archiveCategory), HttpStatus.CREATED);
+    }
+
+	@GetMapping("/archive/all")
 	public ResponseEntity<List<Archive>> getAllArchives() {
 		return new ResponseEntity<>(archiveService.getAllArchives(), HttpStatus.OK);
 	}
 
-	@GetMapping("/cat/{cat}")
+	@GetMapping("/archive/{cat}")
 	public ResponseEntity<List<Archive>> getArchiveByCategory(@PathVariable("cat") String cat) {
 		return new ResponseEntity<>(archiveService.getArchiveByCategory(cat), HttpStatus.OK);
 	}
@@ -62,7 +75,7 @@ public class ArchiveUploadController {
 				"attachment; filename=\"" + file.getFilename() + "\"").body(file);
 	}
 
-	@PostMapping("/upload-file")
+	@PostMapping("/archive/upload-file")
     public ResponseEntity<Archive> handleFileUploadWithJson(
             @RequestParam("file") MultipartFile file,
             @RequestParam("data") String jsonData) throws IOException {
@@ -83,7 +96,7 @@ public class ArchiveUploadController {
 				return new ResponseEntity<>(archiveService.saveArchive(archive),HttpStatus.CREATED);
     }
 
-	@DeleteMapping("/delete/{id}")
+	@DeleteMapping("/archive/delete/{id}")
 	public void deleteArchive(@PathVariable("id") Long id){
 		archiveService.deleteArchive(id);
 		Archive archive = archiveService.getArchiveById(id);
