@@ -41,10 +41,15 @@ public class ArchiveUploadController {
 		this.archiveCategoryService = archiveCategoryService;
 	}
 
-	@GetMapping("/")
+	@GetMapping("/login")
+	public String login(){
+		return "login";
+	}
+
+	@GetMapping("/admin")
     public String getAllArchiveCategories(Model model) {
         model.addAttribute("categories", archiveCategoryService.getAllArchivesCategories());
-        return "index";
+        return "admin";
     }
 
     @PostMapping("/categories/add")
@@ -65,7 +70,6 @@ public class ArchiveUploadController {
 	@GetMapping("/{filename:.+}")
 	@ResponseBody
 	public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
-
 		Resource file = storageService.loadAsResource(filename);
 
 		if (file == null)
@@ -85,7 +89,7 @@ public class ArchiveUploadController {
 				.build().toString();
 
 				ArchiveCategoryList categoryList = archiveCategoryService.mapToArchiveCategories(jsonData);
-				
+
 				Archive archive = new Archive();
 				archive.setArchiveCategories(categoryList.getArchiveCategories());
 				archive.setFilePath(url);
@@ -96,15 +100,37 @@ public class ArchiveUploadController {
 				return new ResponseEntity<>(archiveService.saveArchive(archive),HttpStatus.CREATED);
     }
 
-	@DeleteMapping("/archive/delete/{id}")
-	public void deleteArchive(@PathVariable("id") Long id){
-		archiveService.deleteArchive(id);
-		Archive archive = archiveService.getArchiveById(id);
-		storageService.deleteFile(archive.getName());
+	@PutMapping("/archive/update/{id}")
+	public ResponseEntity<Archive> updateArchive(
+			@RequestBody Archive updatedArchive,
+			@PathVariable("id") Long id){
+
+		String oldFileName = archiveService.getArchiveById(id).getName();
+		storageService.renameFile(oldFileName, updatedArchive.getName());
+
+		String url = MvcUriComponentsBuilder
+				.fromMethodName(ArchiveUploadController.class, "serveFile", updatedArchive.getName())
+				.build().toString();
+
+		System.out.println(url);
+		updatedArchive.setFilePath(url);
+
+		return new ResponseEntity<>(
+				archiveService.updateArchive(updatedArchive),
+				HttpStatus.ACCEPTED
+		);
 	}
+
+	@DeleteMapping("/archive/delete/{id}")
+	public ResponseEntity<?> deleteArchive(@PathVariable("id") Long id){
+		storageService.deleteFile(archiveService.getArchiveById(id).getName());
+		archiveService.deleteArchive(id);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 
 	@ExceptionHandler(StorageFileNotFoundException.class)
 	public ResponseEntity<?> handleStorageFileNotFound(StorageFileNotFoundException exc) {
 		return ResponseEntity.notFound().build();
 	}
+
 }

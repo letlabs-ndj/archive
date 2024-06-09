@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -93,6 +94,17 @@ public class FileSystemStorageService implements StorageService {
 		}
 		catch (MalformedURLException e) {
 			throw new StorageFileNotFoundException("Could not read file: " + filename, e);
+		}
+	}
+
+	@Override
+	public void renameFile(String oldFileName,String newFileName) {
+		Path oldPath = load(oldFileName);
+		Path newPath = load(newFileName);
+		File existingFile = oldPath.toFile();
+
+		if (!existingFile.getName().equals(newFileName)){
+			existingFile.renameTo(newPath.toFile());
 		}
 	}
 

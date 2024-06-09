@@ -32,6 +32,10 @@ public class ArchiveService {
     public List<Archive> getArchiveByCategory(String cat){
         return archiveRepo.findAllArchivesByCategories(cat);
     }
+
+    public Archive updateArchive(Archive archive){
+        return archiveRepo.save(archive);
+    }
     public void deleteArchive(Long id){
         archiveRepo.deleteById(id);
     }

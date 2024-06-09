@@ -22,7 +22,6 @@ public class ArchiveApplication {
 
 	@Autowired
 	StorageService storageService;
-
 	@Autowired
 	ArchiveCategoryService archiveCategoryService;
 	

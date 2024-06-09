@@ -86,8 +86,9 @@ upload.addEventListener('click', () => {
     body: formData
   })
   .then((response) => {
+    console.log(response.status)
     if(response.status==201){
-      window.location.href = 'http://localhost:8080/';
+      window.location.href = 'http://localhost:8080/upload';
     }else{
       console.log('failed registration')
     }

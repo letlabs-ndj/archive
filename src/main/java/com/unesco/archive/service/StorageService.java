@@ -18,7 +18,10 @@ public interface StorageService {
 
 	Resource loadAsResource(String filename);
 
+	void renameFile(String oldFileName, String newFileName);
+
 	void deleteAll();
+
 	void deleteFile(String fileName);
 
 }
