@@ -20,6 +20,9 @@ public class User {
     @Column
     private String password;
 
+    @Column
+    private String role;
+
     public User(String username, String password) {
         this.username = username;
         this.password = password;
